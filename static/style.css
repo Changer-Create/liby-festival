@@ -159,7 +159,7 @@
 .mast {grid-template-columns:max-content minmax(0,1fr)}
 .mast .title {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
 .mast .event-lockup {min-width:0;line-height:1}
-.event-slogan {display:block;width:100%;height:auto;max-height:155px;object-fit:contain}
+.event-slogan {display:block;width:80%;height:auto;max-height:88px;object-fit:contain;margin-inline:auto}
 .mast .edit-control[data-edit="background"] {grid-column:1/-1;justify-self:end}
 .tabs button {display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
 .tabs svg {width:1.12em;height:1.12em;flex:none;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
@@ -174,3 +174,20 @@
 }
 
 [hidden]{display:none!important}
+
+.daily-wordmark {display:block;width:clamp(160px,18vw,246px);height:auto;margin:7px 0}
+@media(max-width:699px){.daily-wordmark{width:120px;margin:4px 0}.event-slogan{width:87%;max-height:58px}}
+
+.tools {justify-content:flex-end}
+.festival-page #schedule {background:none;padding:0}
+.sports-heading {display:flex;align-items:center;gap:9px;color:white;text-shadow:0 1px 5px #161733;font-size:clamp(20px,2vw,28px);font-style:italic;font-weight:800;line-height:1.4;margin:0 0 8px}
+.sports-heading::before {content:"";width:4px;height:.85em;background:#ffb475;transform:skew(-13deg)}
+.calendar {position:relative;isolation:isolate;display:flex;flex-wrap:nowrap;overflow-x:auto;border:0;border-radius:12px;margin-top:8px;padding:22px 20px 24px;background:#faf7f3 url("festival/calendar-track.webp") center/100% 100% no-repeat}
+.calendar article {position:relative;min-width:118px;display:flex;flex-direction:column;align-items:center;gap:0;padding:0 4px 9px;border:0;border-bottom:1px solid #f4bd8b;text-align:center}
+.calendar article::after {content:"";position:absolute;top:47px;left:0;right:0;height:3px;background:#85bdef;z-index:-1}
+.calendar article:last-child {border-radius:0 20px 20px 0}
+.calendar article:last-child::after {height:calc(100% - 47px);background:none;border-top:3px solid #85bdef;border-right:1px solid #f4bd8b;border-radius:0 30px 30px 0}
+.calendar time {margin:0 0 31px;font:italic bold 26px/34px Georgia,serif;color:#162d50}
+.calendar time::after {content:"";position:absolute;left:50%;top:42px;transform:translateX(-50%);width:10px;height:10px;border:2px solid #78b5ef;background:white;border-radius:50%}
+.calendar article:last-child time::after {border-color:#ef9853}
+@media(max-width:699px){.calendar{padding:14px 9px 18px;scroll-snap-type:x proximity}.calendar article{min-width:105px;scroll-snap-align:start}.calendar time{font-size:22px}}

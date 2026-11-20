@@ -44,7 +44,7 @@ function brand(){
  const a=state.assets;
  const logo=(path,title)=>imagePath(path)?'<img class="brandImg" src="'+imagePath(path)+'" alt="'+title+'">':'';
  el("company").innerHTML=logo(a.company,"立白科技集团")+'<span>立白科技集团<span class="sep"> / </span>第一届文化节</span>';
- el("festival").innerHTML=logo(a.festival,"每日赛Li")||'<strong class="wordmark">每日赛<i>Li</i></strong><b class="flag" aria-hidden="true"></b>';
+ el("festival").innerHTML=logo(a.festival,"每日赛Li")||'<img class="daily-wordmark" src="./static/festival/titles/daily-li.webp" alt="每日赛Li">';
 }
 const projectIcons={
  "足球":'<circle cx="12" cy="12" r="9.5"/><path d="m12 7 5 3-2 5h-6l-2-5zM12 7V3m5 7 4-1m-6 6 3 4m-9-4-3 4m1-9L3 9"/>',
@@ -69,7 +69,7 @@ function render(){
  if(el("detail").open)matchDetail(el("detail").dataset.matchId);
 }
 function projectHeading(){
- return `<h1 class="event-lockup"><img class="event-slogan" src="./static/festival/titles/${mascotFiles[project]}-wide.webp" alt="${slogans[project]}"></h1><img class="project-mascot" src="./static/festival/${mascotFiles[project]}.webp" alt="">${editButton("background","编辑项目背景")}`;
+ return `<h1 class="event-lockup"><img class="event-slogan" src="./static/festival/titles/${project==="足球"?"football-clean":mascotFiles[project]+"-wide"}.webp" alt="${slogans[project]}"></h1><img class="project-mascot" src="./static/festival/${mascotFiles[project]}.webp" alt="">${editButton("background","编辑项目背景")}`;
 }
 const statusOrder={"未开始":0,"进行中":1,"已结束":2};
 function compareMatches(a,b){
@@ -91,11 +91,11 @@ function matchTicket(m){
 function sports(){
  const matches=state.matches.filter(m=>m.project===project).sort(compareMatches);
  const stages=state.schedules.filter(s=>s.project===project).sort((a,b)=>a.date.localeCompare(b.date));
- el("main").innerHTML=`<div class="match-toolbar"><h2 class="match-heading">项目对阵 ${editButton("matches","新增对阵")}</h2></div>
+ el("main").innerHTML=`<div class="match-toolbar"><h2 class="sports-heading">项目对阵 ${editButton("matches","新增对阵")}</h2></div>
  <section class="rail" id="rail" aria-label="项目对阵">${matches.map(matchTicket).join("")||"<p>对阵待公布</p>"}</section>
- <div class="tools"><small>${matches.length} 场</small>
+ <div class="tools">
  <div><button data-slide="-1" aria-label="上一场">←</button><button data-slide="1" aria-label="下一场">→</button></div></div>
- <section id="schedule"><h2>项目赛程 ${editButton("schedules","新增阶段")}</h2><div class="calendar">${stages.map(s=>'<article><time>'+esc(s.date.slice(5).replace("-","/"))+'</time><strong>'+esc(s.title)+'</strong>'+editButton('schedules','编辑阶段',s.id)+'</article>').join("")||"赛程待公布"}</div></section>`;
+ <section id="schedule"><h2 class="sports-heading">项目赛程 ${editButton("schedules","新增阶段")}</h2><div class="calendar">${stages.map(s=>'<article><time>'+esc(s.date.slice(5).replace("-","/"))+'</time><strong>'+esc(s.title)+'</strong>'+editButton('schedules','编辑阶段',s.id)+'</article>').join("")||"赛程待公布"}</div></section>`;
 }
 function matchDetail(id){
  const dialog=el("detail");
