@@ -62,14 +62,20 @@ function render(){
  }
  const old=el("rail")?.scrollLeft||0;
  document.body.classList.toggle("music",project===projects[4]);
- el("tabs").innerHTML=projects.map(p=>'<button aria-pressed="'+(p===project)+'" data-project="'+p+'" aria-label="'+p+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+projectIcons[p]+'</svg><span class="tab-lettering" aria-hidden="true">'+p+'</span></button>').join("");
+ if(!el("tabs").childElementCount)el("tabs").innerHTML=projects.map(p=>'<button aria-pressed="'+(p===project)+'" data-project="'+p+'" aria-label="'+p+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+projectIcons[p]+'</svg><span class="tab-lettering" aria-hidden="true">'+p+'</span></button>').join("");
+ for(const tab of el("tabs").children)tab.setAttribute("aria-pressed",String(tab.dataset.project===project));
  el("project-heading").innerHTML=projectHeading();
- if(project===projects[4])music();else {ladderObserver?.disconnect();sports()}
+ if(project===projects[4])music();else {ladderObserver?.disconnect();portraitObserver?.disconnect();sports()}
  if(el("rail"))el("rail").scrollLeft=old;
  if(el("detail").open)matchDetail(el("detail").dataset.matchId);
 }
+const sloganHeights={"badminton": 255, "football": 261, "basketball": 238, "singer": 253, "esports": 255};
+const mascotWidths={"badminton": 366, "football": 375, "basketball": 366, "singer": 357, "esports": 372};
 function projectHeading(){
- return `<h1 class="event-lockup"><img class="event-slogan" src="./static/festival/titles/${mascotFiles[project]}-flat.webp" alt="${slogans[project]}"></h1><img class="project-mascot" src="./static/festival/${mascotFiles[project]}.webp" alt="">${editButton("background","编辑项目背景")}`;
+ const key=mascotFiles[project];
+ const prefix="./static/festival/titles/responsive/"+key+"-";
+ const sources=[720,960,1200,1550].map(w=>prefix+w+".webp "+w+"w").join(", ");
+ return `<h1 class="event-lockup"><img class="event-slogan" width="1550" height="${sloganHeights[key]}" src="${prefix}960.webp" srcset="${sources}" sizes="(max-width:699px) min(60vw,360px), (max-width:1000px) 36vw, min(43vw,520px)" alt="${slogans[project]}"></h1><img class="project-mascot" width="${mascotWidths[key]}" height="400" src="./static/festival/${mascotFiles[project]}.webp" alt="">${editButton("background","编辑项目背景")}`;
 }
 const statusOrder={"未开始":0,"进行中":1,"已结束":2};
 function compareMatches(a,b){
@@ -110,14 +116,26 @@ function matchDetail(id){
   ${match.detail?'<p class="detail-notes">'+esc(match.detail)+'</p>':""}`;
  if(!dialog.open)dialog.showModal();
 }
-const portrait=p=>imagePath(p.photo)?'<img alt="" src="'+imagePath(p.photo)+'">':'<span class="initial">'+esc(p.name.slice(0,1))+'</span>';
+let portraitObserver;
+const portrait=(p,defer=false)=>imagePath(p.photo)?'<img alt="" '+(defer?'data-src':'src')+'="'+imagePath(p.photo)+'">':'<span class="initial">'+esc(p.name.slice(0,1))+'</span>';
 function music(){
+ portraitObserver?.disconnect();
+ const defer=innerWidth<700 && 'IntersectionObserver' in window;
  const rs=[...state.rounds].sort((a,b)=>a.order-b.order),people=new Map(state.people.map(p=>[p.id,p]));
  if(!people.has(selected))selected=rs.at(-1)?.entries[0]?.person;
 
  el("main").innerHTML=(managing?'<div class="music-actions">'+editButton("people","新增选手")+editButton("rounds","新增轮次")+'</div>':'')+'<div class="musicgrid"><div class="ladder">'+rs.map(r=>'<section class="round"><h3>'+esc(r.title)+(managing&&!r.published?" · 草稿":"")+'</h3>'+editButton('rounds','编辑轮次',r.id)+'<div class="roster">'+r.entries.map(e=>{
- const p=people.get(e.person);return p?'<button class="artist '+(p.id===selected?'chosen':'')+'" data-person="'+esc(p.id)+'">'+portrait(p)+'<b>'+esc(p.name)+'</b><span class="artist-dept" title="'+esc(p.department || '部门待补充')+'">'+esc(p.department || '部门待补充')+'</span>'+(e.rank?'<small>'+esc(e.rank)+'</small>':'')+'</button>':""
+ const p=people.get(e.person);return p?'<button class="artist '+(p.id===selected?'chosen':'')+'" data-person="'+esc(p.id)+'">'+portrait(p,defer)+'<b>'+esc(p.name)+'</b><span class="artist-dept" title="'+esc(p.department || '部门待补充')+'">'+esc(p.department || '部门待补充')+'</span>'+(e.rank?'<small>'+esc(e.rank)+'</small>':'')+'</button>':""
  }).join("")+'</div></section>').join("")+'</div>'+'<div id="profile-slot"></div></div>';
+ if(defer){
+  portraitObserver=new IntersectionObserver(entries=>{
+   for(const entry of entries){
+    if(!entry.isIntersecting)continue;
+    const img=entry.target;img.src=img.dataset.src;portraitObserver.unobserve(img);
+   }
+  },{rootMargin:"64px"});
+  el("main").querySelectorAll("img[data-src]").forEach(img=>portraitObserver.observe(img));
+ }
  updateProfile();
  observeLadder(el("main").querySelector(".ladder"));
 
@@ -169,9 +187,13 @@ function observeLadder(ladder){
   const d=paths.join(" ");
   if(path.getAttribute("d")!==d)path.setAttribute("d",d);
  }
- ladderObserver=new ResizeObserver(paint);
+ let frame=0;
+ function schedulePaint(){
+  if(!frame)frame=requestAnimationFrame(()=>{frame=0;if(ladder.isConnected)paint()});
+ }
+ ladderObserver=new ResizeObserver(schedulePaint);
  ladder.querySelectorAll(".roster").forEach(row=>ladderObserver.observe(row));
- ladder.addEventListener("scroll",paint,true);
+ ladder.addEventListener("scroll",schedulePaint,true);
  paint();
 }
 
@@ -184,6 +206,21 @@ document.addEventListener("click",e=>{
  if(b.dataset.match){if(managing)openEditor("matches",b.dataset.match);else matchDetail(b.dataset.match)}
  if(b.id==="close")el("detail").close()
 });
-
-state={"matches": [{"id": "m0-0", "project": "足球", "date": "2026-12-15T16:00", "title": "决赛", "a": "甲队", "b": "乙队", "score": "2:1", "status": "进行中", "detail": "", "demo": true}, {"id": "m0-1", "project": "足球", "date": "2026-12-07T14:00", "title": "半决赛", "a": "丙队", "b": "丁队", "score": "1:0", "status": "已结束", "detail": "", "demo": true}, {"id": "m0-2", "project": "足球", "date": "2026-11-30T14:00", "title": "小组赛", "a": "甲队", "b": "丙队", "score": "2:0", "status": "已结束", "detail": "", "demo": true}, {"id": "m0-3", "project": "足球", "date": "2026-11-23T14:00", "title": "小组赛", "a": "乙队", "b": "丁队", "score": "1:1", "status": "已结束", "detail": "", "demo": true}, {"id": "m0-4", "project": "足球", "title": "小组赛", "date": "2026-11-30T16:30", "a": "戊队", "b": "己队", "status": "未开始", "score": "0:0", "detail": "", "demo": true}, {"id": "m0-5", "project": "足球", "title": "小组赛", "date": "2026-11-30T17:30", "a": "庚队", "b": "辛队", "status": "未开始", "score": "0:0", "detail": "", "demo": true}, {"id": "m0-6", "project": "足球", "title": "小组赛", "date": "2026-11-23T16:30", "a": "戊队", "b": "庚队", "status": "已结束", "score": "3:2", "detail": "", "demo": true}, {"id": "m0-7", "project": "足球", "title": "小组赛", "date": "2026-11-23T17:30", "a": "己队", "b": "辛队", "status": "已结束", "score": "0:1", "detail": "", "demo": true}, {"id": "m1-0", "project": "篮球", "date": "2026-12-16T16:00", "title": "决赛", "a": "甲队", "b": "乙队", "score": "102:98", "status": "进行中", "detail": "", "demo": true}, {"id": "m1-1", "project": "篮球", "date": "2026-12-09T14:00", "title": "半决赛", "a": "丙队", "b": "丁队", "score": "78:71", "status": "已结束", "detail": "", "demo": true}, {"id": "m1-2", "project": "篮球", "date": "2026-12-02T14:00", "title": "小组赛", "a": "甲队", "b": "丙队", "score": "86:80", "status": "已结束", "detail": "", "demo": true}, {"id": "m1-3", "project": "篮球", "date": "2026-11-25T14:00", "title": "小组赛", "a": "乙队", "b": "丁队", "score": "91:89", "status": "已结束", "detail": "", "demo": true}, {"id": "m1-4", "project": "篮球", "title": "小组赛", "date": "2026-12-02T16:30", "a": "戊队", "b": "己队", "status": "未开始", "score": "0:0", "detail": "", "demo": true}, {"id": "m1-5", "project": "篮球", "title": "小组赛", "date": "2026-12-02T17:30", "a": "庚队", "b": "辛队", "status": "未开始", "score": "0:0", "detail": "", "demo": true}, {"id": "m1-6", "project": "篮球", "title": "小组赛", "date": "2026-11-25T16:30", "a": "戊队", "b": "庚队", "status": "已结束", "score": "88:82", "detail": "", "demo": true}, {"id": "m1-7", "project": "篮球", "title": "小组赛", "date": "2026-11-25T17:30", "a": "己队", "b": "辛队", "status": "已结束", "score": "63:70", "detail": "", "demo": true}, {"id": "m2-0", "project": "羽毛球", "date": "2026-12-17T16:00", "title": "决赛", "a": "甲队", "b": "乙队", "score": "1:0", "status": "进行中", "detail": "首局 21–18", "demo": true}, {"id": "m2-1", "project": "羽毛球", "date": "2026-12-10T14:00", "title": "半决赛", "a": "丙队", "b": "丁队", "score": "2:1", "status": "已结束", "detail": "", "demo": true}, {"id": "m2-2", "project": "羽毛球", "date": "2026-12-03T14:00", "title": "预选赛", "a": "甲队", "b": "丙队", "score": "2:0", "status": "已结束", "detail": "", "demo": true}, {"id": "m2-3", "project": "羽毛球", "date": "2026-11-26T14:00", "title": "预选赛", "a": "乙队", "b": "丁队", "score": "2:1", "status": "已结束", "detail": "", "demo": true}, {"id": "m2-4", "project": "羽毛球", "title": "预选赛", "date": "2026-12-03T16:30", "a": "选手甲", "b": "选手乙", "status": "未开始", "score": "0:0", "detail": "", "demo": true}, {"id": "m2-5", "project": "羽毛球", "title": "预选赛", "date": "2026-12-03T17:30", "a": "组合甲", "b": "组合乙", "status": "未开始", "score": "0:0", "detail": "", "demo": true}, {"id": "m2-6", "project": "羽毛球", "title": "预选赛", "date": "2026-11-26T16:30", "a": "选手丙", "b": "选手丁", "status": "已结束", "score": "2:1", "detail": "", "demo": true}, {"id": "m2-7", "project": "羽毛球", "title": "预选赛", "date": "2026-11-26T17:30", "a": "组合丙", "b": "组合丁", "status": "已结束", "score": "0:2", "detail": "", "demo": true}, {"id": "m3-0", "project": "王者荣耀", "date": "2026-12-16T16:00", "title": "决赛", "a": "甲队", "b": "乙队", "score": "2:1", "status": "进行中", "detail": "", "demo": true}, {"id": "m3-1", "project": "王者荣耀", "date": "2026-12-16T14:00", "title": "季军赛", "a": "丙队", "b": "丁队", "score": "2:0", "status": "已结束", "detail": "", "demo": true}, {"id": "m3-2", "project": "王者荣耀", "date": "2026-12-15T14:00", "title": "半决赛", "a": "甲队", "b": "丙队", "score": "2:1", "status": "已结束", "detail": "", "demo": true}, {"id": "m3-3", "project": "王者荣耀", "date": "2026-12-15T14:00", "title": "半决赛", "a": "乙队", "b": "丁队", "score": "2:0", "status": "已结束", "detail": "", "demo": true}, {"id": "m3-4", "project": "王者荣耀", "title": "总部线下初赛", "date": "2026-12-04T16:30", "a": "戊队", "b": "己队", "status": "未开始", "score": "0:0", "detail": "", "demo": true}, {"id": "m3-5", "project": "王者荣耀", "title": "总部线下初赛", "date": "2026-12-04T17:30", "a": "庚队", "b": "辛队", "status": "未开始", "score": "0:0", "detail": "", "demo": true}, {"id": "m3-6", "project": "王者荣耀", "title": "驻外线上初赛", "date": "2026-11-27T16:30", "a": "戊队", "b": "庚队", "status": "已结束", "score": "2:0", "detail": "", "demo": true}, {"id": "m3-7", "project": "王者荣耀", "title": "驻外线上初赛", "date": "2026-11-27T17:30", "a": "己队", "b": "辛队", "status": "已结束", "score": "1:2", "detail": "", "demo": true}], "schedules": [{"id": "s0-0", "project": "足球", "date": "2026-11-23", "title": "小组赛"}, {"id": "s0-1", "project": "足球", "date": "2026-11-30", "title": "小组赛"}, {"id": "s0-2", "project": "足球", "date": "2026-12-07", "title": "半决赛"}, {"id": "s0-3", "project": "足球", "date": "2026-12-15", "title": "决赛"}, {"id": "s1-0", "project": "篮球", "date": "2026-11-25", "title": "小组赛"}, {"id": "s1-1", "project": "篮球", "date": "2026-12-02", "title": "小组赛"}, {"id": "s1-2", "project": "篮球", "date": "2026-12-09", "title": "半决赛"}, {"id": "s1-3", "project": "篮球", "date": "2026-12-16", "title": "决赛"}, {"id": "s2-0", "project": "羽毛球", "date": "2026-11-26", "title": "预选赛"}, {"id": "s2-1", "project": "羽毛球", "date": "2026-12-03", "title": "预选赛"}, {"id": "s2-2", "project": "羽毛球", "date": "2026-12-10", "title": "半决赛"}, {"id": "s2-3", "project": "羽毛球", "date": "2026-12-17", "title": "决赛"}, {"id": "s3-0", "project": "王者荣耀", "date": "2026-11-27", "title": "驻外线上初赛"}, {"id": "s3-1", "project": "王者荣耀", "date": "2026-12-04", "title": "总部线下初赛"}, {"id": "s3-2", "project": "王者荣耀", "date": "2026-12-11", "title": "八强赛"}, {"id": "s3-3", "project": "王者荣耀", "date": "2026-12-15", "title": "半决赛"}, {"id": "s3-4", "project": "王者荣耀", "date": "2026-12-16", "title": "季军赛"}, {"id": "s3-5", "project": "王者荣耀", "date": "2026-12-16", "title": "决赛"}], "people": [{"id": "p0", "name": "林小满", "photo": "/static/photos/0.jpg", "demo": true}, {"id": "p1", "name": "陈子墨", "photo": "/static/photos/1.jpg", "demo": true}, {"id": "p2", "name": "周清瑶", "photo": "/static/photos/2.jpg", "demo": true}, {"id": "p3", "name": "高亦辰", "photo": "/static/photos/3.jpg", "demo": true}, {"id": "p4", "name": "苏念安", "photo": "/static/photos/4.jpg", "demo": true}, {"id": "p5", "name": "何景川", "photo": "/static/photos/5.jpg", "demo": true}, {"id": "p6", "name": "唐心怡", "photo": "/static/photos/6.jpg", "demo": true}, {"id": "p7", "name": "赵一航", "photo": "/static/photos/7.jpg", "demo": true}, {"id": "p8", "name": "夏雨桐", "photo": "/static/photos/8.jpg", "demo": true}, {"id": "p9", "name": "陆远", "photo": "/static/photos/9.jpg", "demo": true}, {"id": "p10", "name": "许知微", "photo": "/static/photos/10.jpg", "demo": true}, {"id": "p11", "name": "韩泽", "photo": "/static/photos/11.jpg", "demo": true}, {"id": "p12", "name": "温芷晴", "photo": "/static/photos/12.jpg", "demo": true}, {"id": "p13", "name": "程屿", "photo": "/static/photos/13.jpg", "demo": true}, {"id": "p14", "name": "方可欣", "photo": "/static/photos/14.jpg", "demo": true}, {"id": "p15", "name": "江昱", "photo": "/static/photos/15.jpg", "demo": true}], "rounds": [{"id": "r0", "title": "海选 16 强", "order": 1, "published": true, "demo": true, "entries": [{"person": "p0", "song": "晴天", "rank": ""}, {"person": "p1", "song": "", "rank": ""}, {"person": "p2", "song": "", "rank": ""}, {"person": "p3", "song": "", "rank": ""}, {"person": "p4", "song": "", "rank": ""}, {"person": "p5", "song": "", "rank": ""}, {"person": "p6", "song": "", "rank": ""}, {"person": "p7", "song": "", "rank": ""}, {"person": "p8", "song": "", "rank": ""}, {"person": "p9", "song": "", "rank": ""}, {"person": "p10", "song": "", "rank": ""}, {"person": "p11", "song": "", "rank": ""}, {"person": "p12", "song": "", "rank": ""}, {"person": "p13", "song": "", "rank": ""}, {"person": "p14", "song": "", "rank": ""}, {"person": "p15", "song": "", "rank": ""}]}, {"id": "r1", "title": "半决赛 8 强", "order": 2, "published": true, "demo": true, "entries": [{"person": "p0", "song": "光年之外", "rank": ""}, {"person": "p1", "song": "", "rank": ""}, {"person": "p4", "song": "", "rank": ""}, {"person": "p5", "song": "", "rank": ""}, {"person": "p8", "song": "", "rank": ""}, {"person": "p10", "song": "", "rank": ""}, {"person": "p12", "song": "", "rank": ""}, {"person": "p13", "song": "", "rank": ""}]}, {"id": "r2", "title": "决赛前三", "order": 3, "published": true, "demo": true, "entries": [{"person": "p0", "song": "如愿", "rank": "冠军"}, {"person": "p4", "song": "", "rank": "亚军"}, {"person": "p8", "song": "", "rank": "季军"}]}], "assets": {}};
-brand();render();
+async function refresh(){
+ const editing=managing;
+ try{
+  const d=await api(editing?"/api/manage":"/api/state");
+  if(editing!==managing || d.version===version)return;
+  state=d.state;version=d.version;brand();render();
+ }catch(error){
+  if(editing&&managing&&error.status===401){mode(false);return}
+  if(!state)el("main").textContent="赛事暂时无法载入，正在重试…";
+ }
+}
+if(document.body.dataset.preview==="true"){
+ api("./preview-data.json").then(data=>{state=data;brand();render()}).catch(()=>{
+  el("main").textContent="赛事数据加载失败，请刷新重试";
+ });
+}else{
+ refresh();setInterval(refresh,3000);
+}

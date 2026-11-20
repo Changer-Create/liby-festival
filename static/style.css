@@ -173,8 +173,6 @@
  .tabs svg {width:1em;height:1em}
 }
 
-[hidden]{display:none!important}
-
 .daily-wordmark {display:block;width:clamp(160px,18vw,246px);height:auto;margin:7px 0}
 @media(max-width:699px){.daily-wordmark{width:120px;margin:4px 0}.event-slogan{width:87%;max-height:58px}}
 
@@ -191,3 +189,12 @@
 .calendar time::after {content:"";position:absolute;left:50%;top:42px;transform:translateX(-50%);width:10px;height:10px;border:2px solid #78b5ef;background:white;border-radius:50%}
 .calendar article:last-child time::after {border-color:#ef9853}
 @media(max-width:699px){.calendar{padding:14px 9px 18px;scroll-snap-type:x proximity}.calendar article{min-width:105px;scroll-snap-align:start}.calendar time{font-size:22px}}
+
+.mast .title {display:flex;justify-content:center;align-items:center;gap:clamp(4px,.65vw,10px)}
+.mast .event-lockup {width:min(43vw,520px);flex:0 1 auto}
+.event-slogan {width:100%;max-height:none;margin:0}
+.mast .project-mascot {flex:none}
+.editing .mast .title {flex-wrap:wrap}
+[hidden] {display:none!important}
+@media(max-width:1000px){.mast .event-lockup {width:36vw}}
+@media(max-width:699px){.mast .event-lockup {width:min(60vw,360px)}}
