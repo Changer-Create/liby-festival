@@ -69,7 +69,7 @@ function render(){
  if(el("detail").open)matchDetail(el("detail").dataset.matchId);
 }
 function projectHeading(){
- return `<h1 class="event-lockup"><img class="event-slogan" src="./static/festival/titles/${project==="足球"?"football-clean":mascotFiles[project]+"-wide"}.webp" alt="${slogans[project]}"></h1><img class="project-mascot" src="./static/festival/${mascotFiles[project]}.webp" alt="">${editButton("background","编辑项目背景")}`;
+ return `<h1 class="event-lockup"><img class="event-slogan" src="./static/festival/titles/${mascotFiles[project]}-flat.webp" alt="${slogans[project]}"></h1><img class="project-mascot" src="./static/festival/${mascotFiles[project]}.webp" alt="">${editButton("background","编辑项目背景")}`;
 }
 const statusOrder={"未开始":0,"进行中":1,"已结束":2};
 function compareMatches(a,b){
