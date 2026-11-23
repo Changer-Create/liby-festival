@@ -198,3 +198,14 @@
 [hidden] {display:none!important}
 @media(max-width:1000px){.mast .event-lockup {width:36vw}}
 @media(max-width:699px){.mast .event-lockup {width:min(60vw,360px)}}
+
+.festival-hero,.brand-footer {display:flex;align-items:center;justify-content:center}
+.festival-hero {gap:clamp(8px,2vw,28px);padding:clamp(12px,2vw,26px) 4%;background:linear-gradient(112deg,#c7ddf1,#a6bbc5 55%,#dec7ad)}
+.festival-hero img {display:block;width:min(44%,350px);height:auto}
+.festival-hero img+img {width:min(49%,490px)}
+.brand-footer {gap:clamp(16px,2vw,28px);padding:20px;background:#fffaf4}
+.brand-footer img {height:clamp(30px,3vw,46px);width:auto;max-width:53%}
+.festival-page .mast .daily-wordmark {width:clamp(105px,12vw,165px)}
+.festival-page .mast .event-lockup {max-width:390px}
+.festival-page .mast .project-mascot {max-height:112px}
+@media(max-width:699px){.festival-page .mast .project-mascot{max-height:76px}.festival-page .mast .event-lockup{max-width:49vw}}

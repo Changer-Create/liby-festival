@@ -42,9 +42,9 @@ const slogans={"足球":"很热血，Li刻冲第一","篮球":"很带感，Li刻
 const mascotFiles={"足球":"football","篮球":"basketball","羽毛球":"badminton","王者荣耀":"esports","歌王争霸":"singer"};
 function brand(){
  const a=state.assets;
- const logo=(path,title)=>imagePath(path)?'<img class="brandImg" src="'+imagePath(path)+'" alt="'+title+'">':'';
- el("company").innerHTML=logo(a.company,"立白科技集团")+'<span>立白科技集团<span class="sep"> / </span>第一届文化节</span>';
- el("festival").innerHTML=logo(a.festival,"每日赛Li")||'<img class="daily-wordmark" src="./static/festival/titles/daily-li.webp" alt="每日赛Li">';
+ el("festival-mark").src=imagePath(a.festival)||"./static/festival/brand/festival.webp";
+ el("group-mark").src=imagePath(a.company)||"./static/festival/brand/group.webp";
+ el("festival").innerHTML='<img class="daily-wordmark" src="./static/festival/titles/daily-li.webp" alt="每日赛Li">';
 }
 const projectIcons={
  "足球":'<circle cx="12" cy="12" r="9.5"/><path d="m12 7 5 3-2 5h-6l-2-5zM12 7V3m5 7 4-1m-6 6 3 4m-9-4-3 4m1-9L3 9"/>',
