@@ -42,7 +42,6 @@ const slogans={"足球":"很热血，Li刻冲第一","篮球":"很带感，Li刻
 const mascotFiles={"足球":"football","篮球":"basketball","羽毛球":"badminton","王者荣耀":"esports","歌王争霸":"singer"};
 function brand(){
  const a=state.assets;
- el("festival-mark").src=imagePath(a.festival)||"./static/festival/brand/festival.webp";
  el("group-mark").src=imagePath(a.company)||"./static/festival/brand/group.webp";
  el("festival").innerHTML='<img class="daily-wordmark" src="./static/festival/titles/daily-li.webp" alt="每日赛Li">';
 }
@@ -54,6 +53,7 @@ const projectIcons={
  "歌王争霸":'<rect x="9" y="2" width="7" height="13" rx="3.5"/><path d="M6 11a6.5 6.5 0 0 0 13 0m-6.5 7v4m-4 0h8"/>'
 };
 function render(){
+ document.body.dataset.event=mascotFiles[project];
  const assets=state.assets;
  const desktop=imagePath(assets[project+"-desktop"]);
  for(const screen of ["desktop","mobile"]){
