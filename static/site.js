@@ -144,7 +144,10 @@ function music(){
 function updateProfile(){
  const person=state.people.find(p=>p.id===selected);
  const rs=[...state.rounds].sort((a,b)=>a.order-b.order);
- el("profile-slot").innerHTML=person?'<aside id="profile"><div class="cover">'+portrait(person)+'</div><h2>'+esc(person.name)+'</h2>'+editButton('people','编辑选手',person.id)+'<div class="department">部门 · '+esc(person.department || '待定')+'</div><h3>参赛曲目</h3>'+rs.flatMap(r=>r.entries.filter(e=>e.person===selected).map(e=>'<p><small>'+esc(r.title)+'</small><strong>'+esc(e.song?'《'+e.song+'》':'待公布')+'</strong></p>')).join("")+(person.demo?'<small>示例选手与曲目</small>':'')+'</aside>':'<p>晋级名单待公布</p>';
+ const songs=rs.flatMap(round=>round.entries
+  .filter(entry=>entry.person===selected && entry.song?.trim())
+  .map(entry=>'<p><small>'+esc(round.title)+'</small><strong>《'+esc(entry.song.trim())+'》</strong></p>'));
+ el("profile-slot").innerHTML=person?'<aside id="profile"><div class="cover">'+portrait(person)+'</div><h2>'+esc(person.name)+'</h2>'+editButton('people','编辑选手',person.id)+'<div class="department">部门 · '+esc(person.department || '待定')+'</div><h3>参赛曲目</h3>'+(songs.join('') || '<p>待公布</p>')+'</aside>':'<p>晋级名单待公布</p>';
 }
 
 // Branches share a spine in the gutter; no line crosses a portrait.
