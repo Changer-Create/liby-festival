@@ -78,7 +78,12 @@ function projectHeading(){
  return `<h1 class="event-lockup"><img class="event-slogan" width="1550" height="${sloganHeights[key]}" src="${prefix}960.webp" srcset="${sources}" sizes="(max-width:699px) min(60vw,360px), (max-width:1000px) 36vw, min(43vw,520px)" alt="${slogans[project]}"></h1><img class="project-mascot" width="${mascotWidths[key]}" height="400" src="./static/festival/${mascotFiles[project]}.webp" alt="">${editButton("background","编辑项目背景")}`;
 }
 const statusOrder={"未开始":0,"进行中":1,"已结束":2};
+function hasBothTeams(match){
+ return [match.a,match.b].every(name=>name?.trim() && !["待定","待公布"].includes(name.trim()));
+}
 function compareMatches(a,b){
+ const confirmed=Number(hasBothTeams(b))-Number(hasBothTeams(a));
+ if(confirmed)return confirmed;
  const group=statusOrder[a.status]-statusOrder[b.status];
  if(group)return group;
  if(a.status==="未开始")return a.date.localeCompare(b.date);
@@ -95,11 +100,11 @@ function matchTicket(m){
   <span class="stage">${esc(m.title)}</span>${managing?'<span class="card-edit">编辑场次</span>':""}</button>`;
 }
 function sports(){
- const matches=state.matches.filter(m=>m.project===project).sort(compareMatches);
+ const matches=state.matches.filter(m=>m.project===project && (managing || hasBothTeams(m))).sort(compareMatches);
  const stages=state.schedules.filter(s=>s.project===project).sort((a,b)=>a.date.localeCompare(b.date));
  el("main").innerHTML=`<div class="match-toolbar"><h2 class="sports-heading">项目对阵 ${editButton("matches","新增对阵")}</h2></div>
  <section class="rail" id="rail" aria-label="项目对阵">${matches.map(matchTicket).join("")||"<p>对阵待公布</p>"}</section>
- <div class="tools">
+ <div class="tools" ${matches.length<2?'style="display:none"':""}>
  <div><button data-slide="-1" aria-label="上一场">←</button><button data-slide="1" aria-label="下一场">→</button></div></div>
  <section id="schedule"><h2 class="sports-heading">项目赛程 ${editButton("schedules","新增阶段")}</h2><div class="calendar">${stages.map(s=>'<article><time>'+esc(s.date.slice(5).replace("-","/"))+'</time><strong>'+esc(s.title)+'</strong>'+editButton('schedules','编辑阶段',s.id)+'</article>').join("")||"赛程待公布"}</div></section>`;
 }
