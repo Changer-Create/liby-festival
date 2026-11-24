@@ -87,9 +87,9 @@ function compareMatches(a,b){
 function matchTicket(m){
  const upcoming=m.status==="未开始";
  const [a,b]=m.score.split(":");
- const center=upcoming?esc(m.date.slice(11,16)):esc(a)+'<i>:</i>'+esc(b);
+ const center=upcoming&&m.date?esc(m.date.slice(11,16)):esc(a)+'<i>:</i>'+esc(b);
  return `<button class="match" data-match="${esc(m.id)}" data-status="${esc(m.status)}">
-  <span class="meta"><span>${esc(m.status)}</span><time>${esc(m.date.slice(5,10).replace("-","/"))}</time></span>
+  <span class="meta"><span>${esc(m.status)}</span><time>${esc(m.date.slice(5,10).replace("-","/")||"待定")}</time></span>
   <strong class="score">${center}</strong>
   <span class="teams"><span>${esc(m.a)}</span><span>${esc(m.b)}</span></span>
   <span class="stage">${esc(m.title)}</span>${managing?'<span class="card-edit">编辑场次</span>':""}</button>`;
@@ -109,10 +109,10 @@ function matchDetail(id){
  if(!match){dialog.close();return}
  const upcoming=match.status==="未开始";
  dialog.dataset.matchId=id;
- el("content").innerHTML=`<div class="detail-meta">${esc(match.project)} · ${esc(match.date.replace("T"," "))}</div>
+ el("content").innerHTML=`<div class="detail-meta">${esc(match.project)} · ${esc(match.date.replace("T"," ")||"日期待定")}</div>
   <h2 id="match-title">${esc(match.title)}</h2>
   <div class="detail-board"><span class="detail-status">${esc(match.status)}</span>
-  <div class="versus"><b>${esc(match.a)}</b><strong>${upcoming?"VS":esc(match.score)}</strong><b>${esc(match.b)}</b></div></div>
+  <div class="versus"><b>${esc(match.a)}</b><strong>${upcoming&&match.date?"VS":esc(match.score)}</strong><b>${esc(match.b)}</b></div></div>
   ${match.detail?'<p class="detail-notes">'+esc(match.detail)+'</p>':""}`;
  if(!dialog.open)dialog.showModal();
 }
