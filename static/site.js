@@ -117,7 +117,7 @@ function matchDetail(id){
  if(!dialog.open)dialog.showModal();
 }
 let portraitObserver;
-const portrait=(p,defer=false)=>imagePath(p.photo)?'<img alt="" '+(defer?'data-src':'src')+'="'+imagePath(p.photo)+'">':'<span class="initial">'+esc(p.name.slice(0,1))+'</span>';
+const portrait=(p,defer=false)=>imagePath(p.photo)?'<img alt="" '+(defer?'data-src':'src')+'="'+imagePath(p.photo)+'">':'<span class="initial">'+esc(p.name==='待定'?'♪':p.name.slice(0,1))+'</span>';
 function music(){
  portraitObserver?.disconnect();
  const defer=innerWidth<700 && 'IntersectionObserver' in window;
@@ -125,7 +125,7 @@ function music(){
  if(!people.has(selected))selected=rs.at(-1)?.entries[0]?.person;
 
  el("main").innerHTML=(managing?'<div class="music-actions">'+editButton("people","新增选手")+editButton("rounds","新增轮次")+'</div>':'')+'<div class="musicgrid"><div class="ladder">'+rs.map(r=>'<section class="round"><h3>'+esc(r.title)+(managing&&!r.published?" · 草稿":"")+'</h3>'+editButton('rounds','编辑轮次',r.id)+'<div class="roster">'+r.entries.map(e=>{
- const p=people.get(e.person);return p?'<button class="artist '+(p.id===selected?'chosen':'')+'" data-person="'+esc(p.id)+'">'+portrait(p,defer)+'<b>'+esc(p.name)+'</b><span class="artist-dept" title="'+esc(p.department || '部门待补充')+'">'+esc(p.department || '部门待补充')+'</span>'+(e.rank?'<small>'+esc(e.rank)+'</small>':'')+'</button>':""
+ const p=people.get(e.person);return p?'<button class="artist '+(p.id===selected?'chosen':'')+'" data-person="'+esc(p.id)+'">'+portrait(p,defer)+'<b>'+esc(p.name)+'</b><span class="artist-dept" title="'+esc(p.department || '待定')+'">'+esc(p.department || '待定')+'</span>'+(e.rank?'<small>'+esc(e.rank)+'</small>':'')+'</button>':""
  }).join("")+'</div></section>').join("")+'</div>'+'<div id="profile-slot"></div></div>';
  if(defer){
   portraitObserver=new IntersectionObserver(entries=>{
@@ -144,7 +144,7 @@ function music(){
 function updateProfile(){
  const person=state.people.find(p=>p.id===selected);
  const rs=[...state.rounds].sort((a,b)=>a.order-b.order);
- el("profile-slot").innerHTML=person?'<aside id="profile"><div class="cover">'+(person.photo==='/static/photos/0.jpg'?'<img src="./static/photos/hero.jpg" alt="林小满舞台照">':portrait(person))+'</div><h2>'+esc(person.name)+'</h2>'+editButton('people','编辑选手',person.id)+'<div class="department">部门 · '+esc(person.department || '待补充')+'</div><h3>参赛曲目</h3>'+rs.flatMap(r=>r.entries.filter(e=>e.person===selected).map(e=>'<p><small>'+esc(r.title)+'</small><strong>'+esc(e.song?'《'+e.song+'》':'待公布')+'</strong></p>')).join("")+(person.demo?'<small>示例选手与曲目</small>':'')+'</aside>':'<p>晋级名单待公布</p>';
+ el("profile-slot").innerHTML=person?'<aside id="profile"><div class="cover">'+portrait(person)+'</div><h2>'+esc(person.name)+'</h2>'+editButton('people','编辑选手',person.id)+'<div class="department">部门 · '+esc(person.department || '待定')+'</div><h3>参赛曲目</h3>'+rs.flatMap(r=>r.entries.filter(e=>e.person===selected).map(e=>'<p><small>'+esc(r.title)+'</small><strong>'+esc(e.song?'《'+e.song+'》':'待公布')+'</strong></p>')).join("")+(person.demo?'<small>示例选手与曲目</small>':'')+'</aside>':'<p>晋级名单待公布</p>';
 }
 
 // Branches share a spine in the gutter; no line crosses a portrait.
