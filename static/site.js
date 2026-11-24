@@ -117,7 +117,7 @@ function matchDetail(id){
  if(!dialog.open)dialog.showModal();
 }
 let portraitObserver;
-const portrait=(p,defer=false)=>imagePath(p.photo)?'<img alt="" '+(defer?'data-src':'src')+'="'+imagePath(p.photo)+'">':'<span class="initial">'+esc(p.name==='待定'?'♪':p.name.slice(0,1))+'</span>';
+const portrait=(p,defer=false)=>imagePath(p.photo)?'<img alt="" '+(defer?'data-src':'src')+'="'+imagePath(p.photo)+'">':'<span class="initial" role="img" aria-label="头像待定">?</span>';
 function music(){
  portraitObserver?.disconnect();
  const defer=innerWidth<700 && 'IntersectionObserver' in window;

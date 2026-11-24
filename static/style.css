@@ -210,3 +210,6 @@
 .festival-page .mast .event-lockup {max-width:390px}
 .festival-page .mast .project-mascot {max-height:112px}
 @media(max-width:699px){.festival-page .mast .project-mascot{max-height:76px}.festival-page .mast .event-lockup{max-width:49vw}}
+
+.initial {background:#e2e4e7;color:#626974;font-family:Arial,sans-serif;font-weight:700;line-height:1}
+.cover .initial {font-size:clamp(40px,5vw,72px)}
